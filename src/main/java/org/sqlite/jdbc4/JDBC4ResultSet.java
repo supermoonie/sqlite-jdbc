@@ -26,7 +26,10 @@ import java.sql.Timestamp;
 import java.util.Map;
 
 import org.sqlite.core.CoreStatement;
+import org.sqlite.core.DB;
 import org.sqlite.jdbc3.JDBC3ResultSet;
+
+import javax.sql.rowset.serial.SerialBlob;
 
 public class JDBC4ResultSet extends JDBC3ResultSet implements ResultSet, ResultSetMetaData {
 	
@@ -385,9 +388,15 @@ public class JDBC4ResultSet extends JDBC3ResultSet implements ResultSet, ResultS
     public BigDecimal getBigDecimal(String col, int s)
         throws SQLException { throw unused(); }
     public Blob getBlob(int col)
-        throws SQLException { throw unused(); }
+            throws SQLException {
+        DB db = this.getDatabase();
+        byte[] bytes = db.column_blob(this.stmt.pointer, this.markCol(col));
+        return new SerialBlob(bytes);
+    }
     public Blob getBlob(String col)
-        throws SQLException { throw unused(); }
+            throws SQLException {
+        return getBlob(findColumn(col));
+    }
     
     public Clob getClob(int col) throws SQLException { 
     	return new SqliteClob(getString(col)); 
